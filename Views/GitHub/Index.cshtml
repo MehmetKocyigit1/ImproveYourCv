@@ -1,0 +1,68 @@
+@model List<DevRota.Services.RepoInfo>
+@{
+    ViewData["Title"] = "GitHub'dan ekle";
+    var user = ViewData["User"] as string;
+}
+
+<header class="page-head">
+    <h1>GitHub'dan proje ekle</h1>
+    <p>Repolarını seç; proje olarak eklenir, kullandıkları diller yeteneklerine işlenir. Daha önce eklenenler yeniden seçilirse dil bilgileri güncellenir.</p>
+</header>
+
+<partial name="_Message" />
+
+<form method="get" class="card-ui mb-4" role="search">
+    <label class="text-label mt-0" for="user">GitHub kullanıcı adı</label>
+    <div class="d-flex gap-2 flex-wrap">
+        <input class="text-input flex-grow-1" style="width:auto" id="user" name="user" value="@user" required autocomplete="off" />
+        <button class="btn-ui" type="submit">Repoları getir</button>
+    </div>
+</form>
+
+@if (ViewData["Error"] is string error)
+{
+    <p class="form-error" role="alert">@error</p>
+}
+else if (user is not null && Model.Count == 0)
+{
+    <p class="empty">Bu kullanıcının herkese açık reposu yok.</p>
+}
+
+@if (Model.Count > 0)
+{
+    <form asp-action="Import" method="post">
+        <input type="hidden" name="user" value="@user" />
+        <div class="section-head">
+            <h2>@Model.Count repo</h2>
+            <label class="choice"><input type="checkbox" id="select-all" /><span>Eklenmemişlerin tümünü seç</span></label>
+        </div>
+        <div class="grid">
+            @foreach (var r in Model)
+            {
+                <label class="card-ui repo-pick">
+                    <span class="d-flex align-items-start gap-2">
+                        <input type="checkbox" name="repos" value="@r.Name" class="repo-check mt-1" data-imported="@(r.Imported ? "1" : "0")" />
+                        <span>
+                            <strong class="d-block">@r.Name</strong>
+                            @if (r.Imported) { <span class="meta">zaten ekli</span> }
+                        </span>
+                    </span>
+                    <span class="d-block text-muted-fg small mt-2">@(r.Description ?? "Açıklama yok")</span>
+                    @if (r.Language is not null) { <span class="tags mt-2 mb-0"><span class="tag">@r.Language</span></span> }
+                </label>
+            }
+        </div>
+        <div class="submit-row mt-3">
+            <button class="btn-ui primary" type="submit">Seçilenleri ekle</button>
+            <a class="btn-ui" asp-controller="Home" asp-action="Index">Portföye dön</a>
+        </div>
+    </form>
+}
+
+@section Scripts {
+    <script>
+        document.getElementById("select-all")?.addEventListener("change", e => {
+            document.querySelectorAll('.repo-check[data-imported="0"]').forEach(c => c.checked = e.target.checked);
+        });
+    </script>
+}

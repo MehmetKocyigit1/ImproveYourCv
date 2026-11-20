@@ -1,0 +1,76 @@
+@model (SurveyAnswers Answers, Roadmap Roadmap)
+@{
+    ViewData["Title"] = "Yol Haritan";
+    var r = Model.Roadmap;
+}
+
+<header class="page-head">
+    <p class="eyebrow">// kişisel yol haritası</p>
+    <h1>@r.RecommendedField yol haritan</h1>
+    <p>@r.Summary</p>
+</header>
+
+<section class="card-ui callout" aria-labelledby="why-title">
+    <h2 id="why-title" class="h6 mb-1">Neden @r.RecommendedField?</h2>
+    <p class="mb-0">@r.FieldReason</p>
+</section>
+
+<section class="section" aria-labelledby="phases-title">
+    <div class="section-head"><h2 id="phases-title">Aşamalar</h2><span class="count">@r.Phases.Count aşama · @Model.Answers.Hours</span></div>
+    <ol class="timeline">
+        @foreach (var (p, i) in r.Phases.Select((p, i) => (p, i)))
+        {
+            <li class="card-ui">
+                <div class="goal-top">
+                    <h3><span class="q-num">@(i + 1)</span> @p.Title</h3>
+                    <span class="meta">@p.Duration</span>
+                </div>
+                <div class="tags mt-2">@foreach (var t in p.Topics) { <span class="tag">@t</span> }</div>
+                <p class="project"><strong>Proje:</strong> @p.Project</p>
+            </li>
+        }
+    </ol>
+</section>
+
+<div class="grid wide section">
+    <section class="card-ui" aria-labelledby="week-title">
+        <h2 id="week-title" class="h5">İlk hafta</h2>
+        <ul class="task-list">
+            @foreach (var s in r.FirstWeek)
+            {
+                <li><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg><span class="title">@s</span></li>
+            }
+        </ul>
+    </section>
+    <section class="card-ui" aria-labelledby="res-title">
+        <h2 id="res-title" class="h5">Önerilen kaynaklar</h2>
+        <ul class="task-list">
+            @foreach (var s in r.Resources)
+            {
+                <li><span class="title">@s.Title</span><span class="meta">@s.Type</span></li>
+            }
+        </ul>
+    </section>
+</div>
+
+<section class="card-ui callout mb-4" aria-label="Sonuç linki">
+    <p class="text-label mt-0">Bu planın linki: daha sonra dönmek için kaydet</p>
+    <div class="d-flex gap-2 flex-wrap">
+        <input class="text-input mono flex-grow-1" style="width:auto" id="result-link" readonly value="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" aria-label="Sonuç linki" />
+        <button type="button" class="btn-ui" id="copy-link">Kopyala</button>
+    </div>
+</section>
+
+<div class="hero-links mb-4">
+    <a class="btn-ui" asp-action="Index">Anketi yeniden doldur</a>
+    <a class="btn-ui" asp-controller="Home" asp-action="Index">Portföye dön</a>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("copy-link").addEventListener("click", async e => {
+            try { await navigator.clipboard.writeText(document.getElementById("result-link").value); e.target.textContent = "Kopyalandı"; }
+            catch { document.getElementById("result-link").select(); }
+        });
+    </script>
+}

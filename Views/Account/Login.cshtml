@@ -1,0 +1,25 @@
+@model DevRota.Controllers.LoginForm
+@{
+    ViewData["Title"] = "Giriş yap";
+}
+
+<div class="auth">
+    <header class="page-head pb-3">
+        <h1>Giriş yap</h1>
+        <p>Yol haritalarına ve hesabına ulaşmak için giriş yap.</p>
+    </header>
+    <form asp-action="Login" asp-route-returnUrl="@Context.Request.Query["returnUrl"]" method="post" class="card-ui auth-form">
+        <div asp-validation-summary="ModelOnly" class="form-error" role="alert"></div>
+        <label class="text-label mt-0" asp-for="Email">E-posta</label>
+        <input class="text-input" asp-for="Email" autocomplete="email" />
+        <span asp-validation-for="Email" class="field-error"></span>
+
+        <label class="text-label" asp-for="Password">Şifre</label>
+        <input class="text-input" asp-for="Password" autocomplete="current-password" />
+        <span asp-validation-for="Password" class="field-error"></span>
+
+        <label class="check-line"><input asp-for="RememberMe" /> Beni hatırla</label>
+        <button class="btn-ui primary w-100 justify-content-center" type="submit">Giriş yap</button>
+    </form>
+    <p class="hint mt-3">Hesabın yok mu? <a asp-action="Register">Kayıt ol</a></p>
+</div>

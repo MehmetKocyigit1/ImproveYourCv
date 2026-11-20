@@ -1,0 +1,103 @@
+@model SurveyAnswers
+@{
+    ViewData["Title"] = "Yol Haritası Anketi";
+}
+
+@functions {
+    // Tek seçimli soru: radyo düğmeleri seçenek kartı olarak
+    void Radios(string name, string[] options, string? selected)
+    {
+        foreach (var o in options)
+        {
+            <label class="choice">
+                <input type="radio" name="@name" value="@o" checked="@(selected == o)" required />
+                <span>@o</span>
+            </label>
+        }
+    }
+    void Checks(string name, string[] options, List<string> selected)
+    {
+        foreach (var o in options)
+        {
+            <label class="choice">
+                <input type="checkbox" name="@name" value="@o" checked="@selected.Contains(o)" />
+                <span>@o</span>
+            </label>
+        }
+    }
+}
+
+<header class="page-head">
+    <h1>Kişisel yol haritanı oluştur</h1>
+    <p>Birkaç soruya cevap ver; ilgi alanına, bildiklerine ve ayırabileceğin süreye göre sana özel bir öğrenme planı hemen hazırlansın. Yaklaşık 2 dakika sürer.</p>
+</header>
+
+<form asp-action="Index" method="post" class="survey" id="survey-form">
+    <div asp-validation-summary="ModelOnly" class="form-error"></div>
+
+    <fieldset class="card-ui q">
+        <legend><span class="q-num">1</span> Alan seçiminde neredesin?</legend>
+        <div class="choices">@{ Radios(nameof(Model.Status), SurveyOptions.Status, Model.Status); }</div>
+        <span asp-validation-for="Status" class="field-error"></span>
+    </fieldset>
+
+    <fieldset class="card-ui q">
+        <legend><span class="q-num">2</span> Hangi alanlar ilgini çekiyor?</legend>
+        <p class="hint">Alanını seçtiysen onu işaretle. En fazla üç seçim yapabilirsin; hiç fikrin yoksa boş bırakabilirsin.</p>
+        <div class="choices">@{ Checks(nameof(Model.Fields), SurveyOptions.Fields, Model.Fields); }</div>
+        <span asp-validation-for="Fields" class="field-error"></span>
+    </fieldset>
+
+    <fieldset class="card-ui q">
+        <legend><span class="q-num">3</span> Şu an hangi aşamadasın?</legend>
+        <div class="choices">@{ Radios(nameof(Model.Level), SurveyOptions.Level, Model.Level); }</div>
+        <span asp-validation-for="Level" class="field-error"></span>
+    </fieldset>
+
+    <fieldset class="card-ui q">
+        <legend><span class="q-num">4</span> Neleri biliyorsun?</legend>
+        <p class="hint">Temel düzeyde kullanabildiklerini de işaretle.</p>
+        <div class="choices">@{ Checks(nameof(Model.Known), SurveyOptions.Known, Model.Known); }</div>
+        <label class="text-label" for="OtherKnown">Listede olmayanlar</label>
+        <input asp-for="OtherKnown" class="text-input" placeholder="Örn. React, Unity, Arduino" maxlength="200" />
+        <span asp-validation-for="OtherKnown" class="field-error"></span>
+    </fieldset>
+
+    <fieldset class="card-ui q">
+        <legend><span class="q-num">5</span> Neler öğrenmek istiyorsun?</legend>
+        <label class="text-label" for="WantToLearn">Merak ettiğin konular, teknolojiler ya da yapmak istediğin bir proje (isteğe bağlı)</label>
+        <textarea asp-for="WantToLearn" class="text-input" rows="3" maxlength="500" placeholder="Örn. Mikroservisler, Docker, bir mobil uygulama yayınlamak"></textarea>
+        <span asp-validation-for="WantToLearn" class="field-error"></span>
+    </fieldset>
+
+    <fieldset class="card-ui q">
+        <legend><span class="q-num">6</span> Öncelikli hedefin ne?</legend>
+        <div class="choices">@{ Radios(nameof(Model.Goal), SurveyOptions.Goal, Model.Goal); }</div>
+        <span asp-validation-for="Goal" class="field-error"></span>
+    </fieldset>
+
+    <fieldset class="card-ui q">
+        <legend><span class="q-num">7</span> Öğrenmeye ne kadar zaman ayırabilirsin?</legend>
+        <div class="choices">@{ Radios(nameof(Model.Hours), SurveyOptions.Hours, Model.Hours); }</div>
+        <span asp-validation-for="Hours" class="field-error"></span>
+    </fieldset>
+
+    <div class="submit-row">
+        <button type="submit" class="btn-ui primary" id="survey-submit">
+            <span class="label">Yol haritamı oluştur</span>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <p class="hint" id="survey-status" role="status" aria-live="polite"></p>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // Çift gönderimi önle
+        document.getElementById("survey-form").addEventListener("submit", () => {
+            const btn = document.getElementById("survey-submit");
+            btn.disabled = true;
+            btn.querySelector(".label").textContent = "Gönderiliyor…";
+        });
+    </script>
+}

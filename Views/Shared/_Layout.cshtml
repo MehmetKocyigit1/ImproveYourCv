@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+@{
+    var route = $"{ViewContext.RouteData.Values["controller"]}/{ViewContext.RouteData.Values["action"]}";
+    string? Current(string r) => route.StartsWith(r) ? "page" : null;
+}
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · @Config["Profile:Name"]</title>
+    <meta name="description" content="@Config["Profile:Title"] — projeler, yetenekler ve öğrenme hedefleri." />
+    <script>
+        // Tema, sayfa çizilmeden önce uygulanır (yanıp sönmeyi önler)
+        (function () {
+            var t = null;
+            try { t = localStorage.getItem("theme"); } catch (e) { }
+            if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            document.documentElement.setAttribute("data-theme", t);
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="container inner">
+            <a class="brand" asp-controller="Home" asp-action="Index">~/<span>@Config["Profile:Handle"]</span></a>
+            <nav aria-label="Ana menü">
+                <ul class="nav-links">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" aria-current="@Current("Home/Index")" aria-label="Portföy">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                            <span>Portföy</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="Goals" aria-current="@Current("Home/Goals")" aria-label="Hedefler">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                            <span>Hedefler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="Notes" aria-current="@Current("Home/Notes")" aria-label="Notlar">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                            <span>Notlar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Survey" asp-action="Index" aria-current="@Current("Survey/")" aria-label="Yol haritası anketi">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15M9 3.236v15"/></svg>
+                            <span>Yol Haritası</span>
+                        </a>
+                    </li>
+                    @if (User.IsInRole(Program.AdminRole))
+                    {
+                        <li>
+                            <a asp-controller="Manage" asp-action="Index" aria-current="@(Current("Manage/") ?? Current("GitHub/"))" aria-label="Yönet">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                <span>Yönet</span>
+                            </a>
+                        </li>
+                    }
+                    <li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-controller="Account" asp-action="Me" aria-current="@Current("Account/")" aria-label="Hesabım">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+                                <span>Hesabım</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" aria-current="@Current("Account/")" aria-label="Giriş yap">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+                                <span>Giriş</span>
+                            </a>
+                        }
+                    </li>
+                </ul>
+            </nav>
+            <button type="button" class="icon-btn" id="theme-toggle" aria-label="Açık / koyu tema değiştir">
+                <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="container inner">
+            <span>&copy; @DateTime.Now.Year @Config["Profile:Name"]</span>
+            <span>ASP.NET Core ile yapıldı</span>
+        </div>
+    </footer>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

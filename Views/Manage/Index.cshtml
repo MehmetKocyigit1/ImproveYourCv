@@ -1,0 +1,137 @@
+@model (List<Skill> Skills, List<Project> Projects, List<Goal> Goals)
+@{
+    ViewData["Title"] = "Yönet";
+}
+
+@functions {
+    async Task LevelSelect(SkillLevel? selected, string id)
+    {
+        <select name="level" id="@id" class="text-input select-sm">
+            <option value="Beginner" selected="@(selected == SkillLevel.Beginner)">Başlangıç</option>
+            <option value="Intermediate" selected="@(selected == SkillLevel.Intermediate)">Orta</option>
+            <option value="Advanced" selected="@(selected == SkillLevel.Advanced)">İleri</option>
+        </select>
+    }
+    async Task DeleteButton(string kind, int id, string label)
+    {
+        <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('@label silinsin mi? Bu işlem geri alınamaz.')">
+            <input type="hidden" name="kind" value="@kind" /><input type="hidden" name="id" value="@id" />
+            <button class="icon-btn danger" type="submit" aria-label="@label sil">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+        </form>
+    }
+}
+
+<header class="page-head">
+    <h1>Yönet</h1>
+    <p>Yeteneklerini, projelerini ve hedeflerini buradan düzenle. Bu sayfa yalnızca yönetici hesabına açıktır.</p>
+</header>
+
+<partial name="_Message" />
+
+<nav class="hero-links mt-0 mb-4" aria-label="Bölümler">
+    <a class="btn-ui" href="#skills">Yetenekler (@Model.Skills.Count)</a>
+    <a class="btn-ui" href="#projects">Projeler (@Model.Projects.Count)</a>
+    <a class="btn-ui" href="#goals">Hedefler (@Model.Goals.Count)</a>
+    <a class="btn-ui primary" asp-controller="GitHub" asp-action="Index">GitHub'dan ekle</a>
+</nav>
+
+@* Yetenekler *@
+<section class="section" id="skills" aria-labelledby="skills-title">
+    <div class="section-head"><h2 id="skills-title">Yetenekler</h2><span class="count">@Model.Skills.Count kayıt</span></div>
+    <form asp-action="AddSkill" method="post" class="card-ui manage-form">
+        <div class="field grow"><label class="text-label mt-0" for="skill-name">Ne biliyorsun?</label>
+            <input class="text-input" id="skill-name" name="name" required maxlength="50" placeholder="Örn. Docker, React, PostgreSQL" /></div>
+        <div class="field"><label class="text-label mt-0" for="skill-level">Seviye</label>@{ await LevelSelect(SkillLevel.Beginner, "skill-level"); }</div>
+        <button class="btn-ui primary" type="submit">Ekle</button>
+    </form>
+    <ul class="manage-list">
+        @foreach (var s in Model.Skills)
+        {
+            <li class="card-ui">
+                <strong class="grow">@s.Name</strong>
+                <form asp-action="SetSkillLevel" method="post" class="d-flex gap-2 align-items-center">
+                    <input type="hidden" name="id" value="@s.Id" />
+                    <label class="visually-hidden" for="lvl-@s.Id">@s.Name seviyesi</label>
+                    @{ await LevelSelect(s.Level, $"lvl-{s.Id}"); }
+                    <button class="btn-ui sm" type="submit">Kaydet</button>
+                </form>
+                @{ await DeleteButton("skill", s.Id, s.Name); }
+            </li>
+        }
+    </ul>
+</section>
+
+@* Projeler *@
+<section class="section" id="projects" aria-labelledby="projects-title">
+    <div class="section-head"><h2 id="projects-title">Projeler</h2><span class="count">@Model.Projects.Count kayıt</span></div>
+    <form asp-action="AddProject" method="post" class="card-ui manage-form wrap">
+        <div class="field grow"><label class="text-label mt-0" for="p-title">Proje adı</label><input class="text-input" id="p-title" name="title" required maxlength="100" /></div>
+        <div class="field grow"><label class="text-label mt-0" for="p-tech">Teknolojiler (virgülle)</label><input class="text-input" id="p-tech" name="technologies" maxlength="300" placeholder="C#, SQL" /></div>
+        <div class="field full"><label class="text-label mt-0" for="p-desc">Açıklama</label><textarea class="text-input" id="p-desc" name="description" rows="2" maxlength="1000"></textarea></div>
+        <div class="field grow"><label class="text-label mt-0" for="p-repo">Kod linki</label><input class="text-input" id="p-repo" name="repoUrl" type="url" placeholder="https://github.com/..." /></div>
+        <div class="field grow"><label class="text-label mt-0" for="p-demo">Demo linki</label><input class="text-input" id="p-demo" name="demoUrl" type="url" placeholder="https://..." /></div>
+        <button class="btn-ui primary" type="submit">Projeyi ekle</button>
+    </form>
+    <ul class="manage-list">
+        @foreach (var p in Model.Projects)
+        {
+            <li class="card-ui">
+                <span class="grow"><strong>@p.Title</strong> <span class="meta">@p.Technologies</span></span>
+                @{ await DeleteButton("project", p.Id, p.Title); }
+            </li>
+        }
+    </ul>
+</section>
+
+@* Hedefler *@
+<section class="section" id="goals" aria-labelledby="goals-title">
+    <div class="section-head"><h2 id="goals-title">Hedefler</h2><span class="count">@Model.Goals.Count kayıt</span></div>
+    <form asp-action="AddGoal" method="post" class="card-ui manage-form wrap">
+        <div class="field grow"><label class="text-label mt-0" for="g-title">Hedef</label><input class="text-input" id="g-title" name="title" required maxlength="100" placeholder="Örn. Junior Backend Developer olmak" /></div>
+        <div class="field"><label class="text-label mt-0" for="g-date">Hedef tarih</label><input class="text-input" id="g-date" name="targetDate" type="date" /></div>
+        <div class="field full"><label class="text-label mt-0" for="g-desc">Açıklama</label><input class="text-input" id="g-desc" name="description" maxlength="1000" /></div>
+        <button class="btn-ui primary" type="submit">Hedef ekle</button>
+    </form>
+    <div class="grid wide mt-3">
+        @foreach (var g in Model.Goals)
+        {
+            <article class="card-ui">
+                <div class="goal-top">
+                    <h3 class="h5 mb-1">@g.Title</h3>
+                    @{ await DeleteButton("goal", g.Id, g.Title); }
+                </div>
+                <p class="meta mb-2">%@g.Progress · @g.Tasks.Count(t => t.IsDone) / @g.Tasks.Count görev</p>
+                <ul class="task-list">
+                    @foreach (var t in g.Tasks.OrderBy(t => t.IsDone))
+                    {
+                        <li class="@(t.IsDone ? "done" : "")">
+                            <form asp-action="ToggleTask" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@t.Id" />
+                                <button class="check-btn" type="submit" aria-label="@t.Title — @(t.IsDone ? "yeniden aç" : "tamamlandı işaretle")">
+                                    @if (t.IsDone)
+                                    {
+                                        <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                                    }
+                                    else
+                                    {
+                                        <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg>
+                                    }
+                                </button>
+                            </form>
+                            <span class="title grow">@t.Title</span>
+                            @{ await DeleteButton("task", t.Id, t.Title); }
+                        </li>
+                    }
+                </ul>
+                <form asp-action="AddTask" method="post" class="d-flex gap-2 mt-2">
+                    <input type="hidden" name="goalId" value="@g.Id" />
+                    <label class="visually-hidden" for="t-@g.Id">@g.Title için yeni görev</label>
+                    <input class="text-input" id="t-@g.Id" name="title" required maxlength="200" placeholder="Yeni görev" />
+                    <button class="btn-ui sm" type="submit">Ekle</button>
+                </form>
+            </article>
+        }
+    </div>
+</section>

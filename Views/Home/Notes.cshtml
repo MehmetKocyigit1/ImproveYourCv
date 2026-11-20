@@ -1,0 +1,28 @@
+@model List<Note>
+@{
+    ViewData["Title"] = "Notlar";
+}
+
+<header class="page-head">
+    <h1>Araştırma Notları</h1>
+    <p>Claude'un benim için yaptığı araştırmalar ve öneriler.</p>
+</header>
+
+@if (Model.Count == 0)
+{
+    <p class="empty">Henüz not yok. Claude'un yaptığı araştırmalar burada görünür.</p>
+}
+<div class="d-grid gap-3">
+    @foreach (var n in Model)
+    {
+        <article class="card-ui">
+            <h2 class="h5 mb-1">@n.Title</h2>
+            <span class="meta">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                @n.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")
+            </span>
+            @* shortcut: markdown düz metin gösteriliyor; okunması zorlaşırsa Markdig ekle *@
+            <div class="note-body">@n.Content</div>
+        </article>
+    }
+</div>
