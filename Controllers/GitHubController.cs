@@ -1,8 +1,8 @@
-using DevRota.Services;
+using ImproveYourCv.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DevRota.Controllers;
+namespace ImproveYourCv.Controllers;
 
 [Authorize(Roles = Program.AdminRole)]
 public class GitHubController(GitHubSync github, IConfiguration config, ILogger<GitHubController> log) : Controller

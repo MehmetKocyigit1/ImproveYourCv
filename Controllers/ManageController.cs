@@ -1,10 +1,10 @@
-using DevRota.Data;
-using DevRota.Models;
+using ImproveYourCv.Data;
+using ImproveYourCv.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevRota.Controllers;
+namespace ImproveYourCv.Controllers;
 
 // Yetenek, proje ve hedef yönetimi (yalnızca Admin rolü)
 [Authorize(Roles = Program.AdminRole), AutoValidateAntiforgeryToken]

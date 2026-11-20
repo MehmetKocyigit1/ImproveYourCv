@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using DevRota.Data;
-using DevRota.Models;
+using ImproveYourCv.Data;
+using ImproveYourCv.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevRota.Services;
+namespace ImproveYourCv.Services;
 
 public record RepoInfo(string Name, string? Description, string? Language, string HtmlUrl, bool Imported);
 

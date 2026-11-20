@@ -1,10 +1,10 @@
 using System.Threading.RateLimiting;
-using DevRota.Data;
-using DevRota.Services;
+using ImproveYourCv.Data;
+using ImproveYourCv.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevRota;
+namespace ImproveYourCv;
 
 public class Program
 {
@@ -85,12 +85,12 @@ public class Program
     {
         // Yerelde LocalDB; yayında ConnectionStrings__Default ortam değişkeniyle Azure SQL bağlantısı verilir
         services.AddDbContext<AppDbContext>(o => o.UseSqlServer(config.GetConnectionString("Default")
-            ?? @"Server=(localdb)\MSSQLLocalDB;Database=DevRota;Trusted_Connection=True;MultipleActiveResultSets=true"));
+            ?? @"Server=(localdb)\MSSQLLocalDB;Database=ImproveYourCv;Trusted_Connection=True;MultipleActiveResultSets=true"));
 
         services.AddHttpClient<GitHubSync>(c =>
         {
             c.BaseAddress = new Uri("https://api.github.com/");
-            c.DefaultRequestHeaders.UserAgent.ParseAdd("DevRota");
+            c.DefaultRequestHeaders.UserAgent.ParseAdd("ImproveYourCv");
             c.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
             // Token yoksa saatte 60 istek sınırı var; user-secrets ile GitHub:Token eklenebilir
             if (config["GitHub:Token"] is { Length: > 0 } token)

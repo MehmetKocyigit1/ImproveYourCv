@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DevRota.Models;
+namespace ImproveYourCv.Models;
 
 public enum SkillLevel { Beginner, Intermediate, Advanced }
 

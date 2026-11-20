@@ -1,10 +1,10 @@
 using System.Diagnostics;
-using DevRota.Data;
-using DevRota.Models;
+using ImproveYourCv.Data;
+using ImproveYourCv.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevRota.Controllers;
+namespace ImproveYourCv.Controllers;
 
 // Site salt okunur; veriler Claude (MCP araçları) üzerinden yazılır
 public class HomeController(AppDbContext db) : Controller

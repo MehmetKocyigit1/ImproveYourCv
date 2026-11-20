@@ -1,13 +1,13 @@
 using System.Security.Claims;
 using System.Text.Json;
-using DevRota.Data;
-using DevRota.Models;
-using DevRota.Services;
+using ImproveYourCv.Data;
+using ImproveYourCv.Models;
+using ImproveYourCv.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevRota.Controllers;
+namespace ImproveYourCv.Controllers;
 
 // Ziyaretçi anketi doldurur, yol haritası anında üretilir.
 // Claude isterse MCP save_roadmap ile planı daha kişisel bir planla değiştirebilir.

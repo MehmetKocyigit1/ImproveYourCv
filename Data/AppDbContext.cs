@@ -1,9 +1,9 @@
-using DevRota.Models;
+using ImproveYourCv.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevRota.Data;
+namespace ImproveYourCv.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<IdentityUser>(options)
 {

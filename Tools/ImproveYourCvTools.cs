@@ -1,16 +1,16 @@
 using System.ComponentModel;
 using System.Text.Json;
-using DevRota.Data;
-using DevRota.Models;
-using DevRota.Services;
+using ImproveYourCv.Data;
+using ImproveYourCv.Models;
+using ImproveYourCv.Services;
 using Microsoft.EntityFrameworkCore;
 using ModelContextProtocol.Server;
 
-namespace DevRota.Tools;
+namespace ImproveYourCv.Tools;
 
 // Claude bu araçlarla sitenin veritabanını okur ve günceller
 [McpServerToolType]
-public static class DevRotaTools
+public static class ImproveYourCvTools
 {
     [McpServerTool(Name = "get_profile"), Description("Tüm projeleri, yetenekleri, hedefleri (görevleriyle) ve notları döndürür. Plan yapmadan önce çağır.")]
     public static async Task<object> GetProfile(AppDbContext db) => new

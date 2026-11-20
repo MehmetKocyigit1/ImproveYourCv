@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace DevRota.Services;
+namespace ImproveYourCv.Services;
 
 // Identity hata mesajlarının Türkçesi (kayıt ve giriş formlarında görünür)
 public class TurkishIdentityErrors : IdentityErrorDescriber

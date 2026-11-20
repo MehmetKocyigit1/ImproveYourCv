@@ -1,6 +1,6 @@
-using DevRota.Models;
+using ImproveYourCv.Models;
 
-namespace DevRota.Services;
+namespace ImproveYourCv.Services;
 
 // Anket cevaplarından anında, kural tabanlı yol haritası üretir (API anahtarı gerekmez).
 // Claude isterse MCP save_roadmap aracıyla bu planı daha kişisel bir planla değiştirebilir.

@@ -1,14 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using DevRota.Data;
-using DevRota.Models;
+using ImproveYourCv.Data;
+using ImproveYourCv.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
-namespace DevRota.Controllers;
+namespace ImproveYourCv.Controllers;
 
 public class LoginForm
 {

@@ -1,4 +1,4 @@
-namespace DevRota.Models
+namespace ImproveYourCv.Models
 {
     public class ErrorViewModel
     {

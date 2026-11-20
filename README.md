@@ -23,7 +23,7 @@ cd ImproveYourCv
 dotnet run
 ```
 
-Veritabanı (`(localdb)\MSSQLLocalDB` üzerinde `DevRota`) ilk açılışta migration'larla otomatik oluşturulur.
+Veritabanı (`(localdb)\MSSQLLocalDB` üzerinde `ImproveYourCv`) ilk açılışta migration'larla otomatik oluşturulur.
 
 ### Yönetici hesabı
 
@@ -48,7 +48,7 @@ dotnet user-secrets set "Admin:Email" "ornek@eposta.com"
 
 ```bash
 dotnet publish -c Release -o <klasör>
-claude mcp add --scope user devrota -- dotnet "<klasör>/DevRota.dll" --mcp
+claude mcp add --scope user improveyourcv -- dotnet "<klasör>/ImproveYourCv.dll" --mcp
 ```
 
 MCP sunucusu `bin` yerine ayrı bir klasörden çalıştırılır; böylece Visual Studio derlerken dll kilitlenmez.

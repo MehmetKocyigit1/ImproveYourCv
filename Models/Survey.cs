@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace DevRota.Models;
+namespace ImproveYourCv.Models;
 
 // Ziyaretçinin doldurduğu anket (form modeli)
 public class SurveyAnswers
