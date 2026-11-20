@@ -1,4 +1,4 @@
-# ImproveYourCv · DevRota
+# ImproveYourCv
 
 Bilgisayar mühendisliği öğrencileri için kişisel portföy ve öğrenme yol haritası uygulaması.
 
