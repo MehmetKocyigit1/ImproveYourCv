@@ -4,3 +4,9 @@ document.getElementById("theme-toggle")?.addEventListener("click", () => {
     document.documentElement.setAttribute("data-theme", next);
     try { localStorage.setItem("theme", next); } catch { }
 });
+
+// data-confirm taşıyan formlar göndermeden önce onay ister (silme işlemleri)
+document.addEventListener("submit", e => {
+    const msg = e.target.dataset?.confirm;
+    if (msg && !confirm(msg)) e.preventDefault();
+});

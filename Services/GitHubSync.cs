@@ -23,15 +23,15 @@ public class GitHubSync(HttpClient http, AppDbContext db)
         (await http.GetFromJsonAsync<List<Repo>>($"users/{Uri.EscapeDataString(user)}/repos?per_page=100&type=owner&sort=pushed", ct) ?? [])
         .Where(r => !r.Fork).ToList();
 
-    public async Task<List<RepoInfo>> ListAsync(string user, CancellationToken ct = default)
+    public async Task<List<RepoInfo>> ListAsync(string user, string userId, CancellationToken ct = default)
     {
         var repos = await FetchAsync(user, ct);
-        var imported = (await db.Projects.Where(p => p.RepoUrl != null).Select(p => p.RepoUrl!).ToListAsync(ct)).ToHashSet();
+        var imported = (await db.Projects.Where(p => p.UserId == userId && p.RepoUrl != null).Select(p => p.RepoUrl!).ToListAsync(ct)).ToHashSet();
         return repos.Select(r => new RepoInfo(r.Name, r.Description, r.Language, r.HtmlUrl, imported.Contains(r.HtmlUrl))).ToList();
     }
 
-    // names null ise tüm repolar içe aktarılır
-    public async Task<string> SyncAsync(string user, IReadOnlyCollection<string>? names = null, CancellationToken ct = default)
+    // Repolar userId hesabına eklenir; names null ise tüm repolar içe aktarılır
+    public async Task<string> SyncAsync(string user, string userId, IReadOnlyCollection<string>? names = null, CancellationToken ct = default)
     {
         var repos = (await FetchAsync(user, ct)).Where(r => names is null || names.Contains(r.Name)).ToList();
         var repoCountByLang = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -41,17 +41,17 @@ public class GitHubSync(HttpClient http, AppDbContext db)
             var langs = await http.GetFromJsonAsync<Dictionary<string, long>>(r.LanguagesUrl, ct) ?? [];
             foreach (var l in langs.Keys) repoCountByLang[l] = repoCountByLang.GetValueOrDefault(l) + 1;
 
-            var p = await db.Projects.FirstOrDefaultAsync(x => x.RepoUrl == r.HtmlUrl, ct);
-            if (p is null) db.Projects.Add(p = new Project { Title = r.Name, RepoUrl = r.HtmlUrl });
+            var p = await db.Projects.FirstOrDefaultAsync(x => x.UserId == userId && x.RepoUrl == r.HtmlUrl, ct);
+            if (p is null) db.Projects.Add(p = new Project { UserId = userId, Title = r.Name, RepoUrl = r.HtmlUrl });
             // Elle yazılmış açıklama ve demo linki ezilmez
             p.Description ??= r.Description;
             p.DemoUrl ??= string.IsNullOrWhiteSpace(r.Homepage) ? null : r.Homepage;
             p.Technologies = string.Join(", ", langs.OrderByDescending(x => x.Value).Select(x => x.Key));
         }
 
-        var existing = await db.Skills.Select(s => s.Name.ToLower()).ToListAsync(ct);
+        var existing = await db.Skills.Where(s => s.UserId == userId).Select(s => s.Name.ToLower()).ToListAsync(ct);
         foreach (var (lang, count) in repoCountByLang.Where(x => !existing.Contains(x.Key.ToLower())))
-            db.Skills.Add(new Skill { Name = lang, Level = LevelFor(count) });
+            db.Skills.Add(new Skill { UserId = userId, Name = lang, Level = LevelFor(count) });
 
         await db.SaveChangesAsync(ct);
         return $"{repos.Count} repo ve {repoCountByLang.Count} dil işlendi.";

@@ -221,6 +221,32 @@ a:hover { color: var(--primary); }
 .btn-ui.danger { color: #dc2626; border-color: color-mix(in srgb, #dc2626 40%, var(--border)); }
 .btn-ui.danger:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
 
+/* Tanıtım sayfası */
+.landing-hero h1 { font-size: clamp(2.1rem, 5vw, 3.3rem); }
+.landing-hero .accent { color: var(--primary); }
+.feature-icon { width: 28px; height: 28px; color: var(--primary); margin-bottom: .75rem; }
+.feature p { margin-bottom: 0; }
+.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.steps li { flex-direction: row; gap: .85rem; align-items: flex-start; }
+.steps p { color: var(--muted-fg); font-size: .95rem; }
+.nav-cta {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 1rem; border-radius: 10px;
+  background: var(--primary); color: var(--primary-fg); font-weight: 600; text-decoration: none; font-size: .95rem;
+}
+.nav-cta:hover { color: var(--primary-fg); filter: brightness(1.08); }
+
+/* Profil sayfası */
+.profile-head { display: grid; grid-template-columns: 1fr minmax(260px, 320px); gap: 1.5rem; padding: 3rem 0 1rem; align-items: start; }
+.profile-head h1 { font-size: clamp(2rem, 4.5vw, 2.8rem); font-weight: 800; margin-bottom: .35rem; }
+.profile-head .lead { font-size: 1.1rem; color: var(--muted-fg); }
+.profile-head .summary { max-width: 65ch; margin-top: .75rem; }
+.completeness .task-list a { text-decoration: none; font-weight: 500; }
+@media (max-width: 767.98px) { .profile-head { grid-template-columns: 1fr; } }
+a.stat { color: var(--fg); text-decoration: none; transition: border-color .2s; }
+a.stat:hover { border-color: var(--primary); }
+.entry-list { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
+.section-nav { gap: .4rem; }
+
 /* Boş durum */
 .empty {
   border: 1px dashed var(--border); border-radius: var(--radius); padding: 2rem;

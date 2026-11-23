@@ -1,22 +1,31 @@
+using System.Security.Claims;
+using ImproveYourCv.Data;
+using ImproveYourCv.Models;
 using ImproveYourCv.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ImproveYourCv.Controllers;
 
-[Authorize(Roles = Program.AdminRole)]
-public class GitHubController(GitHubSync github, IConfiguration config, ILogger<GitHubController> log) : Controller
+// Giriş yapan kullanıcı kendi GitHub repolarını profiline aktarır
+[Authorize]
+public class GitHubController(GitHubSync github, AppDbContext db, ILogger<GitHubController> log) : Controller
 {
+    string Uid => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
     [HttpGet]
     public async Task<IActionResult> Index(string? user, CancellationToken ct)
     {
-        // Varsayılan kullanıcı adı profil linkinden alınır
-        user ??= config["Profile:GitHubUrl"]?.TrimEnd('/').Split('/').LastOrDefault();
+        var uid = Uid;
+        // Varsayılan kullanıcı adı profildeki GitHub linkinden alınır
+        user ??= (await db.Profiles.AsNoTracking().Where(p => p.UserId == uid).Select(p => p.GitHubUrl).FirstOrDefaultAsync(ct))
+            ?.TrimEnd('/').Split('/').LastOrDefault();
         ViewData["User"] = user;
         if (string.IsNullOrWhiteSpace(user)) return View(new List<RepoInfo>());
         try
         {
-            return View(await github.ListAsync(user.Trim(), ct));
+            return View(await github.ListAsync(user.Trim(), uid, ct));
         }
         catch (HttpRequestException e)
         {
@@ -24,7 +33,7 @@ public class GitHubController(GitHubSync github, IConfiguration config, ILogger<
             ViewData["Error"] = e.StatusCode switch
             {
                 System.Net.HttpStatusCode.NotFound => $"\"{user}\" adında bir GitHub kullanıcısı bulunamadı.",
-                System.Net.HttpStatusCode.Forbidden => "GitHub istek sınırına ulaşıldı (saatte 60). Biraz sonra tekrar dene.",
+                System.Net.HttpStatusCode.Forbidden => "GitHub istek sınırına ulaşıldı. Biraz sonra tekrar dene.",
                 _ => "GitHub'a ulaşılamadı. İnternet bağlantını kontrol et.",
             };
             return View(new List<RepoInfo>());
@@ -39,9 +48,15 @@ public class GitHubController(GitHubSync github, IConfiguration config, ILogger<
             TempData["Message"] = "Hiç repo seçilmedi.";
             return RedirectToAction(nameof(Index), new { user });
         }
+        var uid = Uid;
         try
         {
-            TempData["Message"] = await github.SyncAsync(user, repos, ct);
+            TempData["Message"] = await github.SyncAsync(user, uid, repos, ct);
+            // Profilde GitHub linki yoksa içe aktarılan hesabın linki eklenir
+            var profile = await db.Profiles.FindAsync([uid], ct);
+            if (profile is null) db.Profiles.Add(profile = new UserProfile { UserId = uid });
+            profile.GitHubUrl ??= $"https://github.com/{Uri.EscapeDataString(user)}";
+            await db.SaveChangesAsync(ct);
         }
         catch (HttpRequestException e)
         {

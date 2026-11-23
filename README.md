@@ -1,13 +1,14 @@
 # ImproveYourCv
 
-Bilgisayar mühendisliği öğrencileri için kişisel portföy ve öğrenme yol haritası uygulaması.
+Bilgisayar mühendisleri ve öğrencileri için CV profili, eksik başlık analizi ve kişisel öğrenme yol haritası platformu.
 
-- **Portföy:** projeler, yetenekler (seviyelere göre) ve hedefler tek sayfada.
+- **CV profili:** her kullanıcı kendi profilini oluşturur: kişisel bilgiler ve özet, eğitim, iş deneyimi, stajlar, projeler, teknik ve sosyal yetenekler, sertifikalar, yabancı diller, yarışmalar ve başarılar, topluluk ve gönüllülük.
+- **Profil doluluğu:** mühendis CV'lerinde beklenen başlıklardan hangilerinin eksik olduğunu yüzde ve öneri listesiyle gösterir.
 - **GitHub'dan ekle:** GitHub repolarını seçerek proje olarak içe aktarır; kullanılan diller yeteneklere işlenir.
-- **Yol haritası anketi:** ziyaretçi 7 soruyu cevaplar (ilgi alanı, bildikleri, hedefi, ayırabileceği süre) ve kişisel öğrenme planını anında görür. Alanını seçmemiş kullanıcıya bildiklerine göre alan önerilir.
-- **Hesaplar:** ziyaretçiler kayıt olup yol haritalarını hesaplarında saklayabilir, hesaplarını silebilir.
-- **Yönetim:** yetenek, proje, hedef ve görevler `Admin` rolündeki hesapla düzenlenir.
-- **Claude entegrasyonu (MCP):** Claude, MCP sunucusu üzerinden profili okuyup hedef/görev ekleyebilir, araştırma notu kaydedebilir ve anket cevaplarına daha kişisel yol haritası yazabilir.
+- **Yol haritası anketi:** 7 soru (ilgi alanı, bildikleri, hedefi, ayırabileceği süre) ve 8 alan için anında kişisel öğrenme planı. Alanını seçmemiş kullanıcıya bildiklerine göre alan önerilir.
+- **Hedefler:** hedefleri görevlere bölme ve ilerleme takibi.
+- **Hesaplar:** kayıt, giriş, hesap silme (hesapla birlikte profil verileri de silinir). Her kullanıcı yalnızca kendi verisini görür.
+- **Claude entegrasyonu (MCP):** Claude, yönetici hesabının profilini okuyup güncelleyebilir, hedef ve araştırma notu ekleyebilir, anket cevaplarına daha kişisel yol haritası yazabilir.
 
 ## Teknolojiler
 
@@ -27,7 +28,7 @@ Veritabanı (`(localdb)\MSSQLLocalDB` üzerinde `ImproveYourCv`) ilk açılışt
 
 ### Yönetici hesabı
 
-Yönetici olacak e-postayı user-secrets ile ayarla, sonra sitede bu e-postayla kayıt ol:
+`Admin:Email` ayarlanmamışsa siteye **ilk kayıt olan hesap** yönetici olur. Yayına almadan önce ya kendin kayıt ol ya da yönetici e-postasını ayarla:
 
 ```bash
 dotnet user-secrets set "Admin:Email" "ornek@eposta.com"
@@ -38,11 +39,10 @@ dotnet user-secrets set "Admin:Email" "ornek@eposta.com"
 | Ayar | Açıklama | Varsayılan |
 |---|---|---|
 | `ConnectionStrings:Default` | SQL Server bağlantısı | LocalDB |
-| `Admin:Email` | Kayıt olunca `Admin` rolü alacak e-posta | — |
-| `GitHub:Token` | GitHub API istek sınırını yükseltmek için (isteğe bağlı) | — |
+| `Admin:Email` | Kayıt olunca `Admin` rolü alacak e-posta | ilk kayıt olan hesap |
+| `GitHub:Token` | GitHub API istek sınırını yükseltmek için; tüm kullanıcılar ortak kullandığı için yayında önerilir | — |
 | `Survey:HourlyLimitPerIp` | IP başına saatlik anket gönderimi | 3 |
 | `Auth:HourlyLimitPerIp` | IP başına saatlik giriş/kayıt denemesi | 20 |
-| `Profile:*` | Ana sayfadaki isim, unvan, tanıtım ve linkler | `appsettings.json` |
 
 ### Claude'a bağlama (MCP)
 

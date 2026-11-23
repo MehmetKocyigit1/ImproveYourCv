@@ -1,0 +1,171 @@
+﻿@model ImproveYourCv.Controllers.ProfileView
+@{
+    var p = Model.Profile;
+    ViewData["Title"] = p.FullName ?? "Profilim";
+    string LevelName(SkillLevel l) => l switch { SkillLevel.Advanced => "İleri", SkillLevel.Intermediate => "Orta", _ => "Başlangıç" };
+    var missing = Model.Checklist.Where(c => !c.Done).ToList();
+}
+
+@functions {
+    async Task Section(string title, IEnumerable<ProfileEntry> items, EntryKind addKind)
+    {
+        var list = items.ToList();
+        var info = EntryKinds.Info[addKind];
+        <section class="section" aria-label="@title">
+            <div class="section-head">
+                <h2>@title</h2>
+                <a class="btn-ui sm" href="@Url.Action("Index", "Manage")#@addKind">@(list.Count == 0 ? "Ekle" : "Düzenle")</a>
+            </div>
+            @if (list.Count == 0)
+            {
+                <p class="empty">Henüz eklenmedi. Örnek: @info.TitleExample</p>
+            }
+            <ul class="entry-list">
+                @foreach (var e in list)
+                {
+                    var i = EntryKinds.Info[e.Kind];
+                    <li class="card-ui">
+                        <div class="goal-top">
+                            <div>
+                                <h3 class="h6 mb-1">@e.Title</h3>
+                                @if (e.Subtitle is not null) { <div class="text-muted-fg">@e.Subtitle</div> }
+                            </div>
+                            <span class="meta">@EntryKinds.Dates(e)</span>
+                        </div>
+                        @if (e.Detail is not null && i.DetailLabel is not null) { <p class="meta mt-2 mb-0">@i.DetailLabel: @e.Detail</p> }
+                        @if (e.Description is not null) { <p class="mt-2 mb-0">@e.Description</p> }
+                        @if (e.Url is not null) { <a class="mt-2 d-inline-block" href="@e.Url" target="_blank" rel="noopener">Bağlantı</a> }
+                    </li>
+                }
+            </ul>
+        </section>
+        await Task.CompletedTask;
+    }
+}
+
+<partial name="_Message" />
+
+<section class="profile-head" aria-labelledby="name-title">
+    <div class="profile-main">
+        <p class="eyebrow">// profilim</p>
+        <h1 id="name-title">@(p.FullName ?? "Adını ekle")</h1>
+        @if (p.Headline is not null) { <p class="lead mb-1">@p.Headline</p> }
+        @if (p.Location is not null) { <p class="meta">@p.Location</p> }
+        @if (p.Summary is not null) { <p class="summary">@p.Summary</p> }
+        <div class="hero-links mt-3">
+            @if (p.GitHubUrl is not null) { <a class="btn-ui sm" href="@p.GitHubUrl" target="_blank" rel="noopener">GitHub</a> }
+            @if (p.LinkedInUrl is not null) { <a class="btn-ui sm" href="@p.LinkedInUrl" target="_blank" rel="noopener">LinkedIn</a> }
+            @if (p.WebsiteUrl is not null) { <a class="btn-ui sm" href="@p.WebsiteUrl" target="_blank" rel="noopener">Web sitesi</a> }
+            @if (p.ContactEmail is not null) { <a class="btn-ui sm" href="mailto:@p.ContactEmail">@p.ContactEmail</a> }
+            @if (p.Phone is not null) { <span class="btn-ui sm">@p.Phone</span> }
+            <a class="btn-ui sm primary" href="@Url.Action("Index", "Manage")#profile">Bilgilerimi düzenle</a>
+        </div>
+    </div>
+
+    <aside class="card-ui completeness" aria-labelledby="comp-title">
+        <h2 id="comp-title" class="h6 mb-2">Profil doluluğu</h2>
+        <div class="progress-ui mt-0">
+            <div class="progress-track" role="progressbar" aria-label="Profil doluluğu" aria-valuenow="@Model.Completeness" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-fill" style="width: @Model.Completeness%"></div>
+            </div>
+            <span class="progress-label">%@Model.Completeness</span>
+        </div>
+        @if (missing.Count == 0)
+        {
+            <p class="hint mb-0">Harika! Mühendis CV'lerinde beklenen tüm başlıklar dolu.</p>
+        }
+        else
+        {
+            <p class="hint">İşverenlerin baktığı eksik başlıklar:</p>
+            <ul class="task-list">
+                @foreach (var c in missing)
+                {
+                    <li><a href="@Url.Action("Index", "Manage")#@c.Anchor">+ @c.Label</a></li>
+                }
+            </ul>
+        }
+    </aside>
+</section>
+
+<div class="stats">
+    <a class="stat" asp-controller="Profile" asp-action="Goals"><b>@Model.Goals.Count</b><small>Hedef</small></a>
+    <a class="stat" asp-controller="Account" asp-action="Me"><b>@Model.RoadmapCount</b><small>Yol haritası</small></a>
+    <a class="stat" asp-controller="Profile" asp-action="Notes"><b>Notlar</b><small>Araştırmalar</small></a>
+</div>
+
+@{ await Section("Deneyim ve stajlar", Model.Of(EntryKind.Experience).Concat(Model.Of(EntryKind.Internship)), EntryKind.Internship); }
+@{ await Section("Eğitim", Model.Of(EntryKind.Education), EntryKind.Education); }
+
+<section class="section" id="projeler" aria-labelledby="projects-title">
+    <div class="section-head">
+        <h2 id="projects-title">Projeler</h2>
+        <span class="d-flex gap-2">
+            <a class="btn-ui sm" asp-controller="GitHub" asp-action="Index">GitHub'dan ekle</a>
+            <a class="btn-ui sm" href="@Url.Action("Index", "Manage")#projects">Düzenle</a>
+        </span>
+    </div>
+    @if (Model.Projects.Count == 0)
+    {
+        <p class="empty">Henüz proje yok. GitHub'dan tek tıkla ekleyebilirsin.</p>
+    }
+    <div class="grid">
+        @foreach (var pr in Model.Projects)
+        {
+            <article class="card-ui">
+                <h3>@pr.Title</h3>
+                <p>@pr.Description</p>
+                <div class="tags">
+                    @foreach (var t in (pr.Technologies ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    {
+                        <span class="tag">@t</span>
+                    }
+                </div>
+                @if (pr.RepoUrl is not null || pr.DemoUrl is not null)
+                {
+                    <div class="card-links">
+                        @if (pr.RepoUrl is not null) { <a href="@pr.RepoUrl" target="_blank" rel="noopener">Kod</a> }
+                        @if (pr.DemoUrl is not null) { <a href="@pr.DemoUrl" target="_blank" rel="noopener">Demo</a> }
+                    </div>
+                }
+            </article>
+        }
+    </div>
+</section>
+
+<section class="section" aria-labelledby="skills-title">
+    <div class="section-head">
+        <h2 id="skills-title">Yetenekler</h2>
+        <a class="btn-ui sm" href="@Url.Action("Index", "Manage")#skills">Düzenle</a>
+    </div>
+    @if (Model.Skills.Count == 0)
+    {
+        <p class="empty">Henüz yetenek yok.</p>
+    }
+    <div class="skill-groups">
+        @foreach (var level in new[] { SkillLevel.Advanced, SkillLevel.Intermediate, SkillLevel.Beginner })
+        {
+            var group = Model.Skills.Where(s => s.Category == SkillCategory.Technical && s.Level == level).ToList();
+            if (group.Count == 0) { continue; }
+            <div class="skill-group card-ui">
+                <h3>
+                    <span class="level-dots" aria-hidden="true">@for (var i = 0; i < 3; i++) { <i class="@(i <= (int)level ? "on" : "")"></i> }</span>
+                    @LevelName(level)
+                </h3>
+                <ul class="tags list-unstyled">@foreach (var s in group) { <li class="tag">@s.Name</li> }</ul>
+            </div>
+        }
+        @{ var soft = Model.Skills.Where(s => s.Category == SkillCategory.Soft).ToList(); }
+        @if (soft.Count > 0)
+        {
+            <div class="skill-group card-ui">
+                <h3>Sosyal beceriler</h3>
+                <ul class="tags list-unstyled">@foreach (var s in soft) { <li class="tag">@s.Name</li> }</ul>
+            </div>
+        }
+    </div>
+</section>
+
+@{ await Section("Sertifikalar ve kurslar", Model.Of(EntryKind.Certificate), EntryKind.Certificate); }
+@{ await Section("Yabancı diller", Model.Of(EntryKind.Language), EntryKind.Language); }
+@{ await Section("Yarışmalar ve başarılar", Model.Of(EntryKind.Achievement), EntryKind.Achievement); }
+@{ await Section("Topluluk ve gönüllülük", Model.Of(EntryKind.Volunteer), EntryKind.Volunteer); }

@@ -1,6 +1,7 @@
-@model (List<Skill> Skills, List<Project> Projects, List<Goal> Goals)
+@model ImproveYourCv.Controllers.ManageView
 @{
-    ViewData["Title"] = "Yönet";
+    ViewData["Title"] = "Bilgilerimi düzenle";
+    var p = Model.Profile;
 }
 
 @functions {
@@ -11,38 +12,144 @@
             <option value="Intermediate" selected="@(selected == SkillLevel.Intermediate)">Orta</option>
             <option value="Advanced" selected="@(selected == SkillLevel.Advanced)">İleri</option>
         </select>
+        await Task.CompletedTask;
     }
     async Task DeleteButton(string kind, int id, string label)
     {
-        <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('@label silinsin mi? Bu işlem geri alınamaz.')">
+        <form asp-action="Delete" method="post" class="d-inline" data-confirm="@label silinsin mi? Bu işlem geri alınamaz.">
             <input type="hidden" name="kind" value="@kind" /><input type="hidden" name="id" value="@id" />
             <button class="icon-btn danger" type="submit" aria-label="@label sil">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
         </form>
     }
+    // Eğitim, deneyim, sertifika... için ortak ekleme formu ve liste
+    async Task EntrySection(EntryKind kind)
+    {
+        var info = EntryKinds.Info[kind];
+        var items = Model.Entries.Where(e => e.Kind == kind).ToList();
+        var k = kind.ToString();
+        <section class="section" id="@k" aria-labelledby="@k-title">
+            <div class="section-head"><h2 id="@k-title">@info.Section</h2><span class="count">@items.Count kayıt</span></div>
+            <form asp-action="AddEntry" method="post" class="card-ui manage-form wrap">
+                <input type="hidden" name="kind" value="@k" />
+                <div class="field grow"><label class="text-label mt-0" for="@k-t">@info.TitleLabel</label>
+                    <input class="text-input" id="@k-t" name="title" required maxlength="150" placeholder="@info.TitleExample" /></div>
+                @if (info.SubtitleLabel is not null)
+                {
+                    <div class="field grow"><label class="text-label mt-0" for="@k-s">@info.SubtitleLabel</label>
+                        <input class="text-input" id="@k-s" name="subtitle" maxlength="150" placeholder="@info.SubtitleExample" /></div>
+                }
+                @if (info.Dates != DateMode.None)
+                {
+                    <div class="field"><label class="text-label mt-0" for="@k-sd">@(info.Dates == DateMode.Single ? "Tarih" : "Başlangıç")</label>
+                        <input class="text-input" id="@k-sd" name="startDate" type="date" /></div>
+                }
+                @if (info.Dates == DateMode.Range)
+                {
+                    <div class="field"><label class="text-label mt-0" for="@k-ed">Bitiş (devam ediyorsa boş)</label>
+                        <input class="text-input" id="@k-ed" name="endDate" type="date" /></div>
+                }
+                @if (info.DetailLabel is not null)
+                {
+                    <div class="field grow"><label class="text-label mt-0" for="@k-d">@info.DetailLabel</label>
+                        <input class="text-input" id="@k-d" name="detail" maxlength="150" placeholder="@info.DetailExample" /></div>
+                }
+                <div class="field full"><label class="text-label mt-0" for="@k-desc">Açıklama (isteğe bağlı)</label>
+                    <textarea class="text-input" id="@k-desc" name="description" rows="2" maxlength="1500" placeholder="Ne yaptın, ne öğrendin? Ölçülebilir sonuçlar ekle."></textarea></div>
+                <div class="field grow"><label class="text-label mt-0" for="@k-u">Bağlantı (isteğe bağlı)</label>
+                    <input class="text-input" id="@k-u" name="url" type="url" placeholder="https://..." /></div>
+                <button class="btn-ui primary" type="submit">Ekle</button>
+            </form>
+            <ul class="manage-list">
+                @foreach (var e in items)
+                {
+                    <li class="card-ui">
+                        <span class="grow"><strong>@e.Title</strong> @if (e.Subtitle is not null) { <span class="text-muted-fg">· @e.Subtitle</span> } <span class="meta ms-1">@EntryKinds.Dates(e)</span></span>
+                        @{ await DeleteButton("entry", e.Id, e.Title); }
+                    </li>
+                }
+            </ul>
+        </section>
+    }
 }
 
 <header class="page-head">
-    <h1>Yönet</h1>
-    <p>Yeteneklerini, projelerini ve hedeflerini buradan düzenle. Bu sayfa yalnızca yönetici hesabına açıktır.</p>
+    <h1>Bilgilerimi düzenle</h1>
+    <p>Mühendis CV'lerinde beklenen tüm başlıklar burada. Doldurdukça profil doluluğun artar.</p>
 </header>
 
 <partial name="_Message" />
 
-<nav class="hero-links mt-0 mb-4" aria-label="Bölümler">
-    <a class="btn-ui" href="#skills">Yetenekler (@Model.Skills.Count)</a>
-    <a class="btn-ui" href="#projects">Projeler (@Model.Projects.Count)</a>
-    <a class="btn-ui" href="#goals">Hedefler (@Model.Goals.Count)</a>
-    <a class="btn-ui primary" asp-controller="GitHub" asp-action="Index">GitHub'dan ekle</a>
+<nav class="hero-links mt-0 mb-4 section-nav" aria-label="Bölümler">
+    <a class="btn-ui sm" href="#profile">Kişisel bilgiler</a>
+    @foreach (var (kind, info) in EntryKinds.Info)
+    {
+        <a class="btn-ui sm" href="#@kind">@info.Section</a>
+    }
+    <a class="btn-ui sm" href="#projects">Projeler</a>
+    <a class="btn-ui sm" href="#skills">Yetenekler</a>
+    <a class="btn-ui sm" href="#goals">Hedefler</a>
+    <a class="btn-ui sm primary" asp-controller="GitHub" asp-action="Index">GitHub'dan ekle</a>
+    <a class="btn-ui sm" asp-controller="Profile" asp-action="Index">Profilime dön</a>
 </nav>
+
+@* Kişisel bilgiler *@
+<section class="section" id="profile" aria-labelledby="profile-title">
+    <div class="section-head"><h2 id="profile-title">Kişisel bilgiler</h2></div>
+    <form asp-action="SaveProfile" method="post" class="card-ui manage-form wrap">
+        <div class="field grow"><label class="text-label mt-0" for="pf-name">Ad soyad</label><input class="text-input" id="pf-name" name="FullName" value="@p.FullName" maxlength="100" autocomplete="name" /></div>
+        <div class="field grow"><label class="text-label mt-0" for="pf-head">Unvan</label><input class="text-input" id="pf-head" name="Headline" value="@p.Headline" maxlength="150" placeholder="Bilgisayar Mühendisliği 3. sınıf · Backend" /></div>
+        <div class="field grow"><label class="text-label mt-0" for="pf-loc">Şehir</label><input class="text-input" id="pf-loc" name="Location" value="@p.Location" maxlength="100" placeholder="İzmir" /></div>
+        <div class="field full"><label class="text-label mt-0" for="pf-sum">Özet</label>
+            <textarea class="text-input" id="pf-sum" name="Summary" rows="3" maxlength="1500" placeholder="Seviyen, ana dillerin, ne tür sistemler geliştirdiğin ve ölçülebilir bir başarın (2-3 cümle)">@p.Summary</textarea></div>
+        <div class="field grow"><label class="text-label mt-0" for="pf-mail">İletişim e-postası</label><input class="text-input" id="pf-mail" name="ContactEmail" type="email" value="@p.ContactEmail" maxlength="256" autocomplete="email" /></div>
+        <div class="field grow"><label class="text-label mt-0" for="pf-phone">Telefon</label><input class="text-input" id="pf-phone" name="Phone" type="tel" value="@p.Phone" maxlength="30" autocomplete="tel" /></div>
+        <div class="field grow"><label class="text-label mt-0" for="pf-gh">GitHub</label><input class="text-input" id="pf-gh" name="GitHubUrl" type="url" value="@p.GitHubUrl" placeholder="https://github.com/kullanici" /></div>
+        <div class="field grow"><label class="text-label mt-0" for="pf-li">LinkedIn</label><input class="text-input" id="pf-li" name="LinkedInUrl" type="url" value="@p.LinkedInUrl" placeholder="https://linkedin.com/in/..." /></div>
+        <div class="field grow"><label class="text-label mt-0" for="pf-web">Web sitesi / portfolyo</label><input class="text-input" id="pf-web" name="WebsiteUrl" type="url" value="@p.WebsiteUrl" placeholder="https://..." /></div>
+        <button class="btn-ui primary" type="submit">Kaydet</button>
+    </form>
+</section>
+
+@foreach (var kind in EntryKinds.Info.Keys)
+{
+    await EntrySection(kind);
+}
+
+@* Projeler *@
+<section class="section" id="projects" aria-labelledby="projects-title">
+    <div class="section-head"><h2 id="projects-title">Projeler</h2><a class="btn-ui sm primary" asp-controller="GitHub" asp-action="Index">GitHub'dan ekle</a></div>
+    <form asp-action="AddProject" method="post" class="card-ui manage-form wrap">
+        <div class="field grow"><label class="text-label mt-0" for="p-title">Proje adı</label><input class="text-input" id="p-title" name="title" required maxlength="100" /></div>
+        <div class="field grow"><label class="text-label mt-0" for="p-tech">Teknolojiler (virgülle)</label><input class="text-input" id="p-tech" name="technologies" maxlength="300" placeholder="C#, SQL" /></div>
+        <div class="field full"><label class="text-label mt-0" for="p-desc">Açıklama</label><textarea class="text-input" id="p-desc" name="description" rows="2" maxlength="1000" placeholder="Ne işe yarıyor, senin katkın ne?"></textarea></div>
+        <div class="field grow"><label class="text-label mt-0" for="p-repo">Kod linki</label><input class="text-input" id="p-repo" name="repoUrl" type="url" placeholder="https://github.com/..." /></div>
+        <div class="field grow"><label class="text-label mt-0" for="p-demo">Demo linki</label><input class="text-input" id="p-demo" name="demoUrl" type="url" placeholder="https://..." /></div>
+        <button class="btn-ui primary" type="submit">Projeyi ekle</button>
+    </form>
+    <ul class="manage-list">
+        @foreach (var pr in Model.Projects)
+        {
+            <li class="card-ui">
+                <span class="grow"><strong>@pr.Title</strong> <span class="meta">@pr.Technologies</span></span>
+                @{ await DeleteButton("project", pr.Id, pr.Title); }
+            </li>
+        }
+    </ul>
+</section>
 
 @* Yetenekler *@
 <section class="section" id="skills" aria-labelledby="skills-title">
     <div class="section-head"><h2 id="skills-title">Yetenekler</h2><span class="count">@Model.Skills.Count kayıt</span></div>
     <form asp-action="AddSkill" method="post" class="card-ui manage-form">
         <div class="field grow"><label class="text-label mt-0" for="skill-name">Ne biliyorsun?</label>
-            <input class="text-input" id="skill-name" name="name" required maxlength="50" placeholder="Örn. Docker, React, PostgreSQL" /></div>
+            <input class="text-input" id="skill-name" name="name" required maxlength="50" placeholder="Örn. Docker, React, takım çalışması" /></div>
+        <div class="field"><label class="text-label mt-0" for="skill-cat">Tür</label>
+            <select name="category" id="skill-cat" class="text-input select-sm">
+                <option value="Technical">Teknik</option>
+                <option value="Soft">Sosyal beceri</option>
+            </select></div>
         <div class="field"><label class="text-label mt-0" for="skill-level">Seviye</label>@{ await LevelSelect(SkillLevel.Beginner, "skill-level"); }</div>
         <button class="btn-ui primary" type="submit">Ekle</button>
     </form>
@@ -50,7 +157,7 @@
         @foreach (var s in Model.Skills)
         {
             <li class="card-ui">
-                <strong class="grow">@s.Name</strong>
+                <strong class="grow">@s.Name @if (s.Category == SkillCategory.Soft) { <span class="meta">sosyal</span> }</strong>
                 <form asp-action="SetSkillLevel" method="post" class="d-flex gap-2 align-items-center">
                     <input type="hidden" name="id" value="@s.Id" />
                     <label class="visually-hidden" for="lvl-@s.Id">@s.Name seviyesi</label>
@@ -58,28 +165,6 @@
                     <button class="btn-ui sm" type="submit">Kaydet</button>
                 </form>
                 @{ await DeleteButton("skill", s.Id, s.Name); }
-            </li>
-        }
-    </ul>
-</section>
-
-@* Projeler *@
-<section class="section" id="projects" aria-labelledby="projects-title">
-    <div class="section-head"><h2 id="projects-title">Projeler</h2><span class="count">@Model.Projects.Count kayıt</span></div>
-    <form asp-action="AddProject" method="post" class="card-ui manage-form wrap">
-        <div class="field grow"><label class="text-label mt-0" for="p-title">Proje adı</label><input class="text-input" id="p-title" name="title" required maxlength="100" /></div>
-        <div class="field grow"><label class="text-label mt-0" for="p-tech">Teknolojiler (virgülle)</label><input class="text-input" id="p-tech" name="technologies" maxlength="300" placeholder="C#, SQL" /></div>
-        <div class="field full"><label class="text-label mt-0" for="p-desc">Açıklama</label><textarea class="text-input" id="p-desc" name="description" rows="2" maxlength="1000"></textarea></div>
-        <div class="field grow"><label class="text-label mt-0" for="p-repo">Kod linki</label><input class="text-input" id="p-repo" name="repoUrl" type="url" placeholder="https://github.com/..." /></div>
-        <div class="field grow"><label class="text-label mt-0" for="p-demo">Demo linki</label><input class="text-input" id="p-demo" name="demoUrl" type="url" placeholder="https://..." /></div>
-        <button class="btn-ui primary" type="submit">Projeyi ekle</button>
-    </form>
-    <ul class="manage-list">
-        @foreach (var p in Model.Projects)
-        {
-            <li class="card-ui">
-                <span class="grow"><strong>@p.Title</strong> <span class="meta">@p.Technologies</span></span>
-                @{ await DeleteButton("project", p.Id, p.Title); }
             </li>
         }
     </ul>

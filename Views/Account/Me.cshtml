@@ -38,8 +38,8 @@
 
 <section class="section" aria-labelledby="danger-title">
     <h2 id="danger-title" class="h5">Hesabı sil</h2>
-    <p class="hint">Hesabın kalıcı olarak silinir. Yol haritaların anonim olarak kalır; linkleri çalışmaya devam eder.</p>
-    <form asp-action="DeleteAccount" method="post" onsubmit="return confirm('Hesabın kalıcı olarak silinsin mi? Bu işlem geri alınamaz.')">
+    <p class="hint">Hesabın ve profil bilgilerin (projeler, yetenekler, eğitim, deneyim, hedefler) kalıcı olarak silinir. Yol haritaların anonim olarak kalır; linkleri çalışmaya devam eder.</p>
+    <form asp-action="DeleteAccount" method="post" data-confirm="Hesabın ve tüm profil bilgilerin kalıcı olarak silinsin mi? Bu işlem geri alınamaz.">
         <button class="btn-ui danger" type="submit">Hesabımı sil</button>
     </form>
 </section>

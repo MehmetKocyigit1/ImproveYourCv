@@ -1,24 +1,14 @@
 using System.Diagnostics;
-using ImproveYourCv.Data;
 using ImproveYourCv.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ImproveYourCv.Controllers;
 
-// Site salt okunur; veriler Claude (MCP araçları) üzerinden yazılır
-public class HomeController(AppDbContext db) : Controller
+public class HomeController : Controller
 {
-    public async Task<IActionResult> Index() => View((
-        await db.Projects.AsNoTracking().OrderBy(p => p.Title).ToListAsync(),
-        await db.Skills.AsNoTracking().OrderBy(s => s.Name).ToListAsync(),
-        await db.Goals.CountAsync()));
-
-    public async Task<IActionResult> Goals() =>
-        View(await db.Goals.AsNoTracking().Include(g => g.Tasks).OrderBy(g => g.TargetDate).ToListAsync());
-
-    public async Task<IActionResult> Notes() =>
-        View(await db.Notes.AsNoTracking().OrderByDescending(n => n.CreatedAt).ToListAsync());
+    // Ziyaretçiye site tanıtımı; giriş yapmış kullanıcı doğrudan profiline gider
+    public IActionResult Index() =>
+        User.Identity?.IsAuthenticated == true ? RedirectToAction("Index", "Profile") : View();
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error() =>

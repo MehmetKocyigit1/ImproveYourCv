@@ -61,12 +61,20 @@ public class AccountController(UserManager<IdentityUser> users, SignInManager<Id
             foreach (var e in result.Errors) ModelState.AddModelError("", e.Description);
             return View(form);
         }
-        // Site sahibinin e-postasıyla açılan hesap yönetici olur
-        if (string.Equals(form.Email, config["Admin:Email"], StringComparison.OrdinalIgnoreCase))
+        // Yönetici: Admin:Email ile kayıt olan; ayar yoksa siteye ilk kayıt olan hesap
+        // shortcut: siteyi yayına almadan önce Admin__Email ayarla ya da kendin kayıt ol, yoksa ilk ziyaretçi yönetici olur
+        var adminEmail = config["Admin:Email"];
+        var isAdmin = string.IsNullOrWhiteSpace(adminEmail)
+            ? (await users.GetUsersInRoleAsync(Program.AdminRole)).Count == 0
+            : string.Equals(form.Email, adminEmail, StringComparison.OrdinalIgnoreCase);
+        if (isAdmin)
+        {
             await users.AddToRoleAsync(user, Program.AdminRole);
+            await db.ClaimLegacyDataAsync(user.Id); // eski tek kullanıcılı sürümün verileri
+        }
         await signIn.SignInAsync(user, isPersistent: false);
-        TempData["Message"] = "Hesabın oluşturuldu. Doldurduğun anketler artık hesabında saklanacak.";
-        return RedirectToAction(nameof(Me));
+        TempData["Message"] = "Hesabın oluşturuldu. Profilini doldurarak başla; ne kadar çok bilgi eklersen CV'n o kadar güçlü olur.";
+        return RedirectToAction("Index", "Profile");
     }
 
     [HttpPost, Authorize]
